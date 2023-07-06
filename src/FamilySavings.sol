@@ -8,6 +8,8 @@ import {ERC20Votes} from "openzeppelin/token/ERC20/extensions/ERC20Votes.sol";
 import "openzeppelin/access/Ownable.sol";
 
 contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
+    uint256 public constant VOTER_BALANCE = 10 ** 18;
+
     mapping(address => uint256) public balances;
 
     constructor(
@@ -20,7 +22,7 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         transferOwnership(_timelock);
         uint256 n = _voters.length;
         for (uint256 i; i < n; i++) {
-            _mint(_voters[i], 1000 * 10 ** 18);
+            _mint(_voters[i], VOTER_BALANCE);
         }
     }
 
