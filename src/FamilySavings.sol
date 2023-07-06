@@ -8,21 +8,21 @@ import {ERC20Votes} from "openzeppelin/token/ERC20/extensions/ERC20Votes.sol";
 import "openzeppelin/access/Ownable.sol";
 
 contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
-    uint256 public constant VOTER_BALANCE = 10 ** 18;
+    uint256 public constant MEMBERS_BALANCE = 10 ** 18;
 
     mapping(address => uint256) public balances;
 
     constructor(
         address _timelock,
-        address[] memory _voters
+        address[] memory _members
     )
         ERC20("FamilySavingsGovernance", "FSG")
         ERC20Permit("FamilySavingsGovernance")
     {
         transferOwnership(_timelock);
-        uint256 n = _voters.length;
+        uint256 n = _members.length;
         for (uint256 i; i < n; i++) {
-            _mint(_voters[i], VOTER_BALANCE);
+            _mint(_members[i], MEMBERS_BALANCE);
         }
     }
 
@@ -38,6 +38,14 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
     ) external onlyOwner {
         balances[_token] -= _amount;
         IERC20(_token).transfer(_to, _amount);
+    }
+
+    function addMember(address _member) external onlyOwner {
+        _mint(_member, MEMBERS_BALANCE);
+    }
+
+    function revokeMember(address _member) external onlyOwner {
+        _burn(_member, balanceOf(_member));
     }
 
     // The functions below are overrides required by Solidity.
