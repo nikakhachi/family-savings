@@ -7,12 +7,27 @@ import {ERC20Permit} from "openzeppelin/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20Votes} from "openzeppelin/token/ERC20/extensions/ERC20Votes.sol";
 import "openzeppelin/access/Ownable.sol";
 
+error PeriodTooShort();
+error TokenNotSupported();
+error TooEarlyForLiquidation();
+
 contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
     uint256 public constant MEMBERS_BALANCE = 10 ** 18;
 
     mapping(address => uint256) public balances;
     mapping(address => uint256) public dailyLendingRates;
     mapping(address => mapping(address => uint256)) public collateralRates;
+
+    struct Borrowing {
+        address borrowToken;
+        address collateralToken;
+        uint256 borrowAmount;
+        uint256 collateralAmount;
+        uint256 returnAmount;
+        uint256 returnDateTimestamp;
+    }
+    mapping(uint256 => Borrowing) public borrowings;
+    uint256 borrowingsCount;
 
     constructor(
         address _timelock,
@@ -55,6 +70,78 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         uint256 _rate
     ) external onlyOwner {
         dailyLendingRates[_token] = _rate;
+    }
+
+    function borrow(
+        address borrowToken,
+        uint256 borrowAmount,
+        address collateralToken,
+        uint256 period
+    ) external returns (uint256) {
+        if (period < 7 days) revert PeriodTooShort();
+
+        uint256 collateralRate = collateralRates[borrowToken][collateralToken];
+
+        if (collateralRate == 0) revert TokenNotSupported();
+
+        uint256 returnAmount = borrowAmount +
+            (dailyLendingRates[borrowToken] * period) /
+            1 ether;
+
+        uint256 collateralAmount = (returnAmount * collateralRate) / 1 ether;
+
+        IERC20(collateralToken).transferFrom(
+            msg.sender,
+            address(this),
+            collateralAmount
+        );
+        IERC20(borrowToken).transfer(msg.sender, borrowAmount);
+
+        borrowings[borrowingsCount] = Borrowing(
+            borrowToken,
+            collateralToken,
+            borrowAmount,
+            collateralAmount,
+            returnAmount,
+            block.timestamp + period
+        );
+
+        ++borrowingsCount;
+
+        balances[borrowToken] -= borrowAmount;
+
+        return borrowingsCount - 1;
+    }
+
+    function repay(uint256 index) external {
+        Borrowing storage borrowing = borrowings[index];
+
+        balances[borrowing.borrowToken] += borrowing.returnAmount;
+
+        IERC20(borrowing.borrowToken).transferFrom(
+            msg.sender,
+            address(this),
+            borrowing.returnAmount
+        );
+        IERC20(borrowing.collateralToken).transfer(
+            msg.sender,
+            borrowing.collateralAmount
+        );
+
+        borrowing.collateralAmount = 0;
+        borrowing.returnAmount = 0;
+    }
+
+    function liquidate(uint256 index) external {
+        Borrowing storage borrowing = borrowings[index];
+
+        if (block.timestamp < borrowing.returnDateTimestamp)
+            revert TooEarlyForLiquidation();
+
+        balances[borrowing.collateralToken] += borrowing.collateralAmount;
+
+        borrowing.collateralAmount = 0;
+        borrowing.returnAmount = 0;
     }
 
     function addMember(address _member) external onlyOwner {
