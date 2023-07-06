@@ -11,6 +11,8 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
     uint256 public constant MEMBERS_BALANCE = 10 ** 18;
 
     mapping(address => uint256) public balances;
+    mapping(address => uint256) public dailyLendingRates;
+    mapping(address => mapping(address => uint256)) public collateralRates;
 
     constructor(
         address _timelock,
@@ -38,6 +40,21 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
     ) external onlyOwner {
         balances[_token] -= _amount;
         IERC20(_token).transfer(_to, _amount);
+    }
+
+    function setCollateralRate(
+        address _lendingToken,
+        address _borrowingToken,
+        uint256 _rate
+    ) external onlyOwner {
+        collateralRates[_lendingToken][_borrowingToken] = _rate;
+    }
+
+    function setDailyLendingRate(
+        address _token,
+        uint256 _rate
+    ) external onlyOwner {
+        dailyLendingRates[_token] = _rate;
     }
 
     function addMember(address _member) external onlyOwner {
