@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
+import {SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {ERC20} from "openzeppelin/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "openzeppelin/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20Votes} from "openzeppelin/token/ERC20/extensions/ERC20Votes.sol";
@@ -12,6 +13,8 @@ error TokenNotSupported();
 error TooEarlyForLiquidation();
 
 contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
+    using SafeERC20 for IERC20;
+
     uint256 public constant MEMBERS_BALANCE = 10 ** 18;
 
     mapping(address => uint256) public balances;
@@ -45,7 +48,7 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
 
     function deposit(address _token, uint256 _amount) external {
         balances[_token] += _amount;
-        IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
     function withdraw(
@@ -54,7 +57,7 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         uint256 _amount
     ) external onlyOwner {
         balances[_token] -= _amount;
-        IERC20(_token).transfer(_to, _amount);
+        IERC20(_token).safeTransfer(_to, _amount);
     }
 
     function setCollateralRate(
@@ -90,12 +93,12 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
 
         uint256 collateralAmount = (returnAmount * collateralRate) / 1 ether;
 
-        IERC20(collateralToken).transferFrom(
+        IERC20(collateralToken).safeTransferFrom(
             msg.sender,
             address(this),
             collateralAmount
         );
-        IERC20(borrowToken).transfer(msg.sender, borrowAmount);
+        IERC20(borrowToken).safeTransfer(msg.sender, borrowAmount);
 
         borrowings[borrowingsCount] = Borrowing(
             borrowToken,
@@ -118,12 +121,12 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
 
         balances[borrowing.borrowToken] += borrowing.returnAmount;
 
-        IERC20(borrowing.borrowToken).transferFrom(
+        IERC20(borrowing.borrowToken).safeTransferFrom(
             msg.sender,
             address(this),
             borrowing.returnAmount
         );
-        IERC20(borrowing.collateralToken).transfer(
+        IERC20(borrowing.collateralToken).safeTransfer(
             msg.sender,
             borrowing.collateralAmount
         );
