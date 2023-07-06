@@ -4,7 +4,6 @@ pragma solidity 0.8.20;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "../src/FamilySavings.sol";
-import "../src/GovernanceToken.sol";
 import "../src/MyGovernor.sol";
 import "../src/TimeLock.sol";
 import "../src/Token.sol";
@@ -20,7 +19,6 @@ contract FamilySavingsTest is Test {
     address[] public emptyArray;
 
     FamilySavings public familySavings;
-    GovernanceToken public governanceToken;
     MyGovernor public myGovernor;
     TimeLock public timeLock;
     Token public token;
@@ -31,13 +29,6 @@ contract FamilySavingsTest is Test {
     string public description;
 
     function setUp() public {
-        governanceToken = new GovernanceToken(voters);
-
-        for (uint i = 0; i < voters.length; i++) {
-            vm.prank(voters[i]);
-            governanceToken.delegate(voters[i]);
-        }
-
         timeLock = new TimeLock(
             TIMELOCK_MIN_DELAY,
             emptyArray,
@@ -49,8 +40,15 @@ contract FamilySavingsTest is Test {
         bytes32 executorRole = timeLock.EXECUTOR_ROLE();
         bytes32 timelockAdminRole = timeLock.TIMELOCK_ADMIN_ROLE();
 
+        familySavings = new FamilySavings(address(timeLock), voters);
+
+        for (uint i = 0; i < voters.length; i++) {
+            vm.prank(voters[i]);
+            familySavings.delegate(voters[i]);
+        }
+
         myGovernor = new MyGovernor(
-            governanceToken,
+            familySavings,
             timeLock,
             VOTING_DELAY,
             VOTING_PERIOD,
@@ -61,7 +59,6 @@ contract FamilySavingsTest is Test {
         timeLock.grantRole(executorRole, address(0));
         timeLock.revokeRole(timelockAdminRole, address(this));
 
-        familySavings = new FamilySavings(address(timeLock));
         token = new Token("Test Token", "TTK", TOKEN_INITIAL_SUPPLY);
     }
 
