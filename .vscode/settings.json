@@ -1,7 +1,7 @@
 {
   "solidity.packageDefaultDependenciesContractsDirectory": "src",
   "solidity.packageDefaultDependenciesDirectory": "lib",
-  "solidity.compileUsingRemoteVersion": "v0.8.13",
+  "solidity.compileUsingRemoteVersion": "v0.8.20",
   "solidity.remappings": [
     "ds-test/=lib/forge-std/lib/ds-test/src/",
     "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
