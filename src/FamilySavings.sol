@@ -68,11 +68,30 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         collateralRates[_lendingToken][_borrowingToken] = _rate;
     }
 
+    function setCollateralRateBatched(
+        address[] calldata _lendingTokens,
+        address[] calldata _borrowingTokens,
+        uint256[] calldata _rates
+    ) external onlyOwner {
+        for (uint256 i = 0; i < _lendingTokens.length; i++) {
+            collateralRates[_lendingTokens[i]][_borrowingTokens[i]] = _rates[i];
+        }
+    }
+
     function setDailyLendingRate(
         address _token,
         uint256 _rate
     ) external onlyOwner {
         dailyLendingRates[_token] = _rate;
+    }
+
+    function setDailyLendingRateBatched(
+        address[] calldata _tokens,
+        uint256[] calldata _rates
+    ) external onlyOwner {
+        for (uint256 i = 0; i < _rates.length; i++) {
+            dailyLendingRates[_tokens[i]] = _rates[i];
+        }
     }
 
     function borrow(
