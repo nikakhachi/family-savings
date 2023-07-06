@@ -16,8 +16,12 @@ contract FamilySavings is Ownable {
         IERC20(_token).transferFrom(msg.sender, address(this), _amount);
     }
 
-    function withdraw(address _token, uint256 _amount) external onlyOwner {
+    function withdraw(
+        address _to,
+        address _token,
+        uint256 _amount
+    ) external onlyOwner {
         balances[_token] -= _amount;
-        IERC20(_token).transfer(address(this), _amount);
+        IERC20(_token).transfer(_to, _amount);
     }
 }
