@@ -74,28 +74,28 @@ contract SettingRatesTest is FamilySavingsTest {
         );
     }
 
-    function testSetDailyLendingRate() public {
+    function testSetAnnualLendingRate() public {
         uint rate = 10;
 
         targets = [address(familySavings)];
         values = [0];
         calldatas = [
             abi.encodeWithSignature(
-                "setDailyLendingRate(address,uint256)",
+                "setAnnualLendingRate(address,uint256)",
                 address(token0),
                 rate
             )
         ];
-        description = "Set Daily Lending Rate";
+        description = "Set Annual Lending Rate";
 
-        assertEq(familySavings.dailyLendingRates(address(token0)), 0);
+        assertEq(familySavings.annualLendingRates(address(token0)), 0);
 
         _proposeAndExecute();
 
-        assertEq(familySavings.dailyLendingRates(address(token0)), rate);
+        assertEq(familySavings.annualLendingRates(address(token0)), rate);
     }
 
-    function testSetDailyLendingRatesBatched() public {
+    function testSetAnnualLendingRatesBatched() public {
         addressArray1 = [address(token0), address(token1)];
         uint256Array = [10, 20];
 
@@ -103,24 +103,24 @@ contract SettingRatesTest is FamilySavingsTest {
         values = [0];
         calldatas = [
             abi.encodeWithSignature(
-                "setDailyLendingRateBatched(address[],uint256[])",
+                "setAnnualLendingRateBatched(address[],uint256[])",
                 addressArray1,
                 uint256Array
             )
         ];
-        description = "Set Daily Lending Rates";
+        description = "Set Annual Lending Rates";
 
-        assertEq(familySavings.dailyLendingRates(addressArray1[0]), 0);
-        assertEq(familySavings.dailyLendingRates(addressArray1[1]), 0);
+        assertEq(familySavings.annualLendingRates(addressArray1[0]), 0);
+        assertEq(familySavings.annualLendingRates(addressArray1[1]), 0);
 
         _proposeAndExecute();
 
         assertEq(
-            familySavings.dailyLendingRates(addressArray1[0]),
+            familySavings.annualLendingRates(addressArray1[0]),
             uint256Array[0]
         );
         assertEq(
-            familySavings.dailyLendingRates(addressArray1[1]),
+            familySavings.annualLendingRates(addressArray1[1]),
             uint256Array[1]
         );
     }

@@ -18,7 +18,7 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
     uint256 public constant MEMBERS_BALANCE = 10 ** 18;
 
     mapping(address => uint256) public balances;
-    mapping(address => uint256) public dailyLendingRates;
+    mapping(address => uint256) public annualLendingRates;
     mapping(address => mapping(address => uint256)) public collateralRates;
 
     struct Borrowing {
@@ -78,19 +78,19 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         }
     }
 
-    function setDailyLendingRate(
+    function setAnnualLendingRate(
         address _token,
         uint256 _rate
     ) external onlyOwner {
-        dailyLendingRates[_token] = _rate;
+        annualLendingRates[_token] = _rate;
     }
 
-    function setDailyLendingRateBatched(
+    function setAnnualLendingRateBatched(
         address[] calldata _tokens,
         uint256[] calldata _rates
     ) external onlyOwner {
         for (uint256 i = 0; i < _rates.length; i++) {
-            dailyLendingRates[_tokens[i]] = _rates[i];
+            annualLendingRates[_tokens[i]] = _rates[i];
         }
     }
 
@@ -107,7 +107,7 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         if (collateralRate == 0) revert TokenNotSupported();
 
         uint256 returnAmount = borrowAmount +
-            (dailyLendingRates[borrowToken] * period) /
+            (annualLendingRates[borrowToken] * period) /
             1 ether;
 
         uint256 collateralAmount = (returnAmount * collateralRate) / 1 ether;
