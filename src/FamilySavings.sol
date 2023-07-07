@@ -8,12 +8,12 @@ import {ERC20Permit} from "openzeppelin/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20Votes} from "openzeppelin/token/ERC20/extensions/ERC20Votes.sol";
 import "openzeppelin/access/Ownable.sol";
 
-error PeriodTooShort();
-error TokenNotSupported();
-error TooEarlyForLiquidation();
-
 contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
     using SafeERC20 for IERC20;
+
+    error PeriodTooShort();
+    error TokenNotSupported();
+    error TooEarlyForLiquidation();
 
     uint256 public constant MEMBERS_BALANCE = 10 ** 18;
 
