@@ -126,7 +126,7 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
             borrowAmount,
             collateralAmount,
             returnAmount,
-            block.timestamp + period
+            block.timestamp + (periodInDays * 86400)
         );
 
         ++borrowingsCount;
