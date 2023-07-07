@@ -9,7 +9,9 @@ import "../src/TimeLock.sol";
 import "../src/Token.sol";
 
 contract FamilySavingsTest is Test {
-    uint256 public constant TOKEN_INITIAL_SUPPLY = 1000 * 10 ** 18;
+    uint256 public constant TOKEN0_INITIAL_SUPPLY = 10000 * 10 ** 18;
+    uint256 public constant TOKEN0_INITIAL_DEPOSIT = 1000 * 10 ** 18;
+    uint256 public constant TOKEN1_INITIAL_SUPPLY = 10000 * 10 ** 18;
     uint256 public constant TIMELOCK_MIN_DELAY = 1 weeks;
     uint256 public constant VOTING_DELAY = 7200;
     uint256 public constant VOTING_PERIOD = 50400;
@@ -21,7 +23,8 @@ contract FamilySavingsTest is Test {
     FamilySavings public familySavings;
     MyGovernor public myGovernor;
     TimeLock public timeLock;
-    Token public token;
+    Token public token0;
+    Token public token1;
 
     address[] public targets;
     uint256[] public values;
@@ -59,15 +62,60 @@ contract FamilySavingsTest is Test {
         timeLock.grantRole(executorRole, address(0));
         timeLock.revokeRole(timelockAdminRole, address(this));
 
-        token = new Token("Test Token", "TTK", TOKEN_INITIAL_SUPPLY);
+        token0 = new Token(
+            "Test Token 0",
+            "TTK",
+            TOKEN0_INITIAL_SUPPLY + TOKEN0_INITIAL_DEPOSIT
+        );
+
+        token0.approve(address(familySavings), TOKEN0_INITIAL_DEPOSIT);
+        familySavings.deposit(address(token0), TOKEN0_INITIAL_DEPOSIT);
+
+        token1 = new Token("Test Token 1", "TTK", TOKEN1_INITIAL_SUPPLY);
     }
 
-    function testDeposit() public {
-        token.approve(address(familySavings), TOKEN_INITIAL_SUPPLY);
-        familySavings.deposit(address(token), TOKEN_INITIAL_SUPPLY);
-        assertEq(familySavings.balances(address(token)), TOKEN_INITIAL_SUPPLY);
-        assertEq(token.balanceOf(address(familySavings)), TOKEN_INITIAL_SUPPLY);
-        assertEq(token.balanceOf(address(this)), 0);
+    function testDepositExisingToken() public {
+        assertEq(
+            token0.balanceOf(address(familySavings)),
+            TOKEN0_INITIAL_DEPOSIT
+        );
+        assertEq(token0.balanceOf(address(this)), TOKEN0_INITIAL_SUPPLY);
+        assertEq(
+            familySavings.balances(address(token0)),
+            TOKEN0_INITIAL_DEPOSIT
+        );
+
+        token0.approve(address(familySavings), TOKEN0_INITIAL_SUPPLY);
+        familySavings.deposit(address(token0), TOKEN0_INITIAL_SUPPLY);
+
+        assertEq(
+            familySavings.balances(address(token0)),
+            TOKEN0_INITIAL_SUPPLY + TOKEN0_INITIAL_DEPOSIT
+        );
+        assertEq(
+            token0.balanceOf(address(familySavings)),
+            TOKEN0_INITIAL_SUPPLY + TOKEN0_INITIAL_DEPOSIT
+        );
+        assertEq(token0.balanceOf(address(this)), 0);
+    }
+
+    function testDepositNewToken() public {
+        assertEq(familySavings.balances(address(token1)), 0);
+        assertEq(token1.balanceOf(address(familySavings)), 0);
+        assertEq(token1.balanceOf(address(this)), TOKEN1_INITIAL_SUPPLY);
+
+        token1.approve(address(familySavings), TOKEN1_INITIAL_SUPPLY);
+        familySavings.deposit(address(token1), TOKEN1_INITIAL_SUPPLY);
+
+        assertEq(
+            familySavings.balances(address(token1)),
+            TOKEN1_INITIAL_SUPPLY
+        );
+        assertEq(
+            token1.balanceOf(address(familySavings)),
+            TOKEN1_INITIAL_SUPPLY
+        );
+        assertEq(token1.balanceOf(address(this)), 0);
     }
 
     function testWithdraw() public {
@@ -77,14 +125,25 @@ contract FamilySavingsTest is Test {
             abi.encodeWithSignature(
                 "withdraw(address,address,uint256)",
                 address(address(2)),
-                address(token),
-                TOKEN_INITIAL_SUPPLY
+                address(token0),
+                TOKEN0_INITIAL_DEPOSIT
             )
         ];
         description = "Withdraw Funds";
 
-        token.approve(address(familySavings), TOKEN_INITIAL_SUPPLY);
-        familySavings.deposit(address(token), TOKEN_INITIAL_SUPPLY);
+        assertEq(
+            token0.balanceOf(address(familySavings)),
+            TOKEN0_INITIAL_DEPOSIT
+        );
+        assertEq(token0.balanceOf(address(2)), 0);
+
+        _proposeAndExecute();
+
+        assertEq(token0.balanceOf(address(familySavings)), 0);
+        assertEq(token0.balanceOf(address(2)), TOKEN0_INITIAL_DEPOSIT);
+    }
+
+    function _proposeAndExecute() private {
         uint256 proposalId = myGovernor.propose(
             targets,
             values,
@@ -111,17 +170,11 @@ contract FamilySavingsTest is Test {
 
         skip(TIMELOCK_MIN_DELAY + 1);
 
-        assertEq(token.balanceOf(address(familySavings)), TOKEN_INITIAL_SUPPLY);
-        assertEq(token.balanceOf(address(2)), 0);
-
         myGovernor.execute(
             targets,
             values,
             calldatas,
             keccak256(bytes(description))
         );
-
-        assertEq(token.balanceOf(address(familySavings)), 0);
-        assertEq(token.balanceOf(address(2)), TOKEN_INITIAL_SUPPLY);
     }
 }
