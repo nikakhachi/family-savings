@@ -143,6 +143,76 @@ contract FamilySavingsTest is Test {
         assertEq(token0.balanceOf(address(2)), TOKEN0_INITIAL_DEPOSIT);
     }
 
+    function testSetCollateralRate() public {
+        uint rate = 10;
+
+        targets = [address(familySavings)];
+        values = [0];
+        calldatas = [
+            abi.encodeWithSignature(
+                "setCollateralRate(address,address,uint256)",
+                address(token0),
+                address(token1),
+                rate
+            )
+        ];
+        description = "Set Collateral Rate";
+
+        assertEq(
+            familySavings.collateralRates(address(token0), address(token1)),
+            0
+        );
+
+        _proposeAndExecute();
+
+        assertEq(
+            familySavings.collateralRates(address(token0), address(token1)),
+            rate
+        );
+    }
+
+    address[] public addressArray1;
+    address[] public addressArray2;
+    uint256[] public uint256Array;
+
+    function testSetCollateralRateBatched() public {
+        addressArray1 = [address(token0), address(token1)];
+        addressArray2 = [address(token1), address(token0)];
+        uint256Array = [10, 20];
+
+        targets = [address(familySavings)];
+        values = [0];
+        calldatas = [
+            abi.encodeWithSignature(
+                "setCollateralRateBatched(address[],address[],uint256[])",
+                addressArray1,
+                addressArray2,
+                uint256Array
+            )
+        ];
+        description = "Set Collateral Rates";
+
+        assertEq(
+            familySavings.collateralRates(addressArray1[0], addressArray2[0]),
+            0
+        );
+        assertEq(
+            familySavings.collateralRates(addressArray1[1], addressArray2[1]),
+            0
+        );
+
+        _proposeAndExecute();
+
+        assertEq(
+            familySavings.collateralRates(addressArray1[0], addressArray2[0]),
+            uint256Array[0]
+        );
+        assertEq(
+            familySavings.collateralRates(addressArray1[1], addressArray2[1]),
+            uint256Array[1]
+        );
+    }
+
     function _proposeAndExecute() private {
         uint256 proposalId = myGovernor.propose(
             targets,
