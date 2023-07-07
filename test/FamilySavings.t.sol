@@ -213,6 +213,57 @@ contract FamilySavingsTest is Test {
         );
     }
 
+    function testSetDailyLendingRate() public {
+        uint rate = 10;
+
+        targets = [address(familySavings)];
+        values = [0];
+        calldatas = [
+            abi.encodeWithSignature(
+                "setDailyLendingRate(address,uint256)",
+                address(token0),
+                rate
+            )
+        ];
+        description = "Set Daily Lending Rate";
+
+        assertEq(familySavings.dailyLendingRates(address(token0)), 0);
+
+        _proposeAndExecute();
+
+        assertEq(familySavings.dailyLendingRates(address(token0)), rate);
+    }
+
+    function testSetDailyLendingRatesBatched() public {
+        addressArray1 = [address(token0), address(token1)];
+        uint256Array = [10, 20];
+
+        targets = [address(familySavings)];
+        values = [0];
+        calldatas = [
+            abi.encodeWithSignature(
+                "setDailyLendingRateBatched(address[],uint256[])",
+                addressArray1,
+                uint256Array
+            )
+        ];
+        description = "Set Daily Lending Rates";
+
+        assertEq(familySavings.dailyLendingRates(addressArray1[0]), 0);
+        assertEq(familySavings.dailyLendingRates(addressArray1[1]), 0);
+
+        _proposeAndExecute();
+
+        assertEq(
+            familySavings.dailyLendingRates(addressArray1[0]),
+            uint256Array[0]
+        );
+        assertEq(
+            familySavings.dailyLendingRates(addressArray1[1]),
+            uint256Array[1]
+        );
+    }
+
     function _proposeAndExecute() private {
         uint256 proposalId = myGovernor.propose(
             targets,
