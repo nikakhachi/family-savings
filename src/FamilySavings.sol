@@ -169,6 +169,12 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         borrowing.returnAmount = 0;
     }
 
+    function getBorrowingById(
+        uint256 _id
+    ) external view returns (Borrowing memory) {
+        return borrowings[_id];
+    }
+
     function addMember(address _member) external onlyOwner {
         _mint(_member, MEMBERS_BALANCE);
     }
