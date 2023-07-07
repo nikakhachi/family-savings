@@ -98,16 +98,16 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         address borrowToken,
         uint256 borrowAmount,
         address collateralToken,
-        uint256 period
+        uint256 periodInDays
     ) external returns (uint256) {
-        if (period < 7 days) revert PeriodTooShort();
+        if (periodInDays < 7 days) revert PeriodTooShort();
 
         uint256 collateralRate = collateralRates[borrowToken][collateralToken];
 
         if (collateralRate == 0) revert TokenNotSupported();
 
         uint256 returnAmount = borrowAmount +
-            (annualLendingRates[borrowToken] * period) /
+            (annualLendingRates[borrowToken] * periodInDays) /
             1 ether;
 
         uint256 collateralAmount = (returnAmount * collateralRate) / 1 ether;
