@@ -45,6 +45,32 @@ contract LendingTest is FamilySavingsTest {
         );
     }
 
+    function testBorrowWithShortPeriod() public {
+        _beforeEach();
+
+        vm.expectRevert(FamilySavings.PeriodTooShort.selector);
+        familySavings.borrow(
+            address(borrowToken),
+            1,
+            address(collateralToken),
+            1
+        );
+    }
+
+    function testBorrowNonSupportedToken() public {
+        _beforeEach();
+
+        vm.expectRevert(FamilySavings.TokenNotSupported.selector);
+        familySavings.borrow(address(0), 1, address(collateralToken), 7);
+    }
+
+    function testBorrowWithNonSupportedCollateral() public {
+        _beforeEach();
+
+        vm.expectRevert(FamilySavings.TokenNotSupported.selector);
+        familySavings.borrow(address(borrowToken), 1, address(0), 7);
+    }
+
     function _beforeEach() private {
         borrowToken = token0;
         collateralToken = token1;
