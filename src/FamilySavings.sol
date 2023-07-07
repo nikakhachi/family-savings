@@ -18,7 +18,7 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
     uint256 public constant MEMBERS_BALANCE = 10 ** 18;
 
     mapping(address => uint256) public balances;
-    mapping(address => uint256) public annualLendingRates;
+    mapping(address => uint256) public annualLendingRates; /// @dev FORMAT: 1 ether = 100%
     mapping(address => mapping(address => uint256)) public collateralRates;
 
     struct Borrowing {
@@ -30,7 +30,7 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         uint256 returnDateTimestamp;
     }
     mapping(uint256 => Borrowing) public borrowings;
-    uint256 borrowingsCount;
+    uint256 public borrowingsCount;
 
     constructor(
         address _timelock,
@@ -107,7 +107,8 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         if (collateralRate == 0) revert TokenNotSupported();
 
         uint256 returnAmount = borrowAmount +
-            (annualLendingRates[borrowToken] * periodInDays) /
+            (borrowAmount * annualLendingRates[borrowToken] * periodInDays) /
+            365 /
             1 ether;
 
         uint256 collateralAmount = (returnAmount * collateralRate) / 1 ether;
