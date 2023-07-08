@@ -8,6 +8,8 @@ import {ERC20Permit} from "openzeppelin/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20Votes} from "openzeppelin/token/ERC20/extensions/ERC20Votes.sol";
 import "openzeppelin/access/Ownable.sol";
 
+/// @title FamilySavings
+/// @author Nika Khachiashvili
 contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
     using SafeERC20 for IERC20;
 
@@ -15,11 +17,12 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
     error TokenNotSupported();
     error TooEarlyForLiquidation();
 
+    /// @dev amount of erc20 token for votes that will be given to a voter (family member)
     uint256 public constant MEMBERS_BALANCE = 10 ** 18;
 
     mapping(address => uint256) public balances;
     mapping(address => uint256) public annualLendingRates; /// @dev FORMAT: 1 ether = 100%
-    mapping(address => mapping(address => uint256)) public collateralRates;
+    mapping(address => mapping(address => uint256)) public collateralRates; /// @dev FORMAT: 1 ether = 100%
 
     struct Borrowing {
         address borrowToken;
@@ -32,6 +35,9 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
     mapping(uint256 => Borrowing) public borrowings;
     uint256 public borrowingsCount;
 
+    /// @dev Contract constructor.
+    /// @param _timelock timelock contract address that will directly execute proposals on the FamilySavings
+    /// @param _members list of voters (family members)
     constructor(
         address _timelock,
         address[] memory _members
@@ -46,11 +52,18 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         }
     }
 
+    /// @notice deposit into the contract
+    /// @param _token token address to deposit
+    /// @param _amount amount to deposit
     function deposit(address _token, uint256 _amount) external {
         balances[_token] += _amount;
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
+    /// @notice withdraw from the contract to a specific address
+    /// @param _to address where the funds will be withdrawn
+    /// @param _token token address that will be withdrawn
+    /// @param _amount amount to withdraw
     function withdraw(
         address _to,
         address _token,
@@ -60,6 +73,10 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         IERC20(_token).safeTransfer(_to, _amount);
     }
 
+    /// @notice set the collateral rate
+    /// @param _lendingToken token address destined for lending
+    /// @param _borrowingToken token address destined for borrowing
+    /// @param _rate collateral rate | FORMAT: 1 ether = 100%
     function setCollateralRate(
         address _lendingToken,
         address _borrowingToken,
@@ -68,6 +85,10 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         collateralRates[_lendingToken][_borrowingToken] = _rate;
     }
 
+    /// @notice set the multiple collateral rates at once
+    /// @param _lendingTokens token addresses destined for lending
+    /// @param _borrowingTokens token addresses destined for borrowing
+    /// @param _rates collateral rates | FORMAT: 1 ether = 100%
     function setCollateralRateBatched(
         address[] calldata _lendingTokens,
         address[] calldata _borrowingTokens,
@@ -78,6 +99,9 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         }
     }
 
+    /// @notice set the annual lending rate
+    /// @param _token  token address
+    /// @param _rate annual rate | FORMAT: 1 ether = 100%
     function setAnnualLendingRate(
         address _token,
         uint256 _rate
@@ -85,6 +109,9 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         annualLendingRates[_token] = _rate;
     }
 
+    /// @notice set the multiple annual lending rates at once
+    /// @param _tokens  token addresses
+    /// @param _rates annual rates | FORMAT: 1 ether = 100%
     function setAnnualLendingRateBatched(
         address[] calldata _tokens,
         uint256[] calldata _rates
@@ -94,6 +121,11 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         }
     }
 
+    /// @notice borrow token by providing a collateral
+    /// @param borrowToken token address for borrowing
+    /// @param borrowAmount amount to borrow
+    /// @param collateralToken token address as the collateral
+    /// @param periodInDays number of days to borrow
     function borrow(
         address borrowToken,
         uint256 borrowAmount,
@@ -138,6 +170,8 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         return borrowingsCount - 1;
     }
 
+    /// @notice repay the debt
+    /// @param index id of the borrowing (debt)
     function repay(uint256 index) external {
         Borrowing storage borrowing = borrowings[index];
 
@@ -157,6 +191,8 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         borrowing.returnAmount = 0;
     }
 
+    /// @notice liquidate the collateral in the borrowing
+    /// @param index id of the borrowing (debt)
     function liquidate(uint256 index) external {
         Borrowing storage borrowing = borrowings[index];
 
@@ -169,16 +205,19 @@ contract FamilySavings is Ownable, ERC20, ERC20Permit, ERC20Votes {
         borrowing.returnAmount = 0;
     }
 
+    /// @notice get borrowing by id
     function getBorrowingById(
         uint256 _id
     ) external view returns (Borrowing memory) {
         return borrowings[_id];
     }
 
+    /// @notice add a voter (family member)
     function addMember(address _member) external onlyOwner {
         _mint(_member, MEMBERS_BALANCE);
     }
 
+    /// @notice revoke a voter (family member)
     function revokeMember(address _member) external onlyOwner {
         _burn(_member, balanceOf(_member));
     }
