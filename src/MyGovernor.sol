@@ -8,6 +8,10 @@ import "openzeppelin/governance/extensions/GovernorVotes.sol";
 import "openzeppelin/governance/extensions/GovernorVotesQuorumFraction.sol";
 import "openzeppelin/governance/extensions/GovernorTimelockControl.sol";
 
+/**
+ * @title Governor Contract
+ * @author Nika Khachiashvili
+ */
 contract MyGovernor is
     Governor,
     GovernorSettings,
@@ -16,6 +20,14 @@ contract MyGovernor is
     GovernorVotesQuorumFraction,
     GovernorTimelockControl
 {
+    /**
+     * @dev Contract constructor.
+     * @param _token token contract address whose owners will be voters
+     * @param _timelock timelock contract address that will directly execute proposals on the FamilySavings
+     * @param _votingDelay How long after a proposal is created should voting power be fixed. A large voting delay gives users time to unstake tokens if necessary.
+     * @param _votingPeriod How long does a proposal remain open to votes.
+     * @param _quorumFraction Quorum fraction neccesary for the proposal voting to be considered as valid
+     */
     constructor(
         IVotes _token,
         TimelockController _timelock,
