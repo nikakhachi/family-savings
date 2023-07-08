@@ -85,6 +85,52 @@ contract LendingTest is FamilySavingsTest {
         familySavings.borrow(address(borrowToken), 1, address(0), 7);
     }
 
+    function testRepay() public {
+        _beforeEach();
+
+        uint borrowAmount = 100 * 10 ** 18;
+        uint periodInDays = 365 * 2;
+        uint256 returnAmount = borrowAmount +
+            (borrowAmount * annualLendingRate * periodInDays) /
+            365 /
+            1 ether;
+        uint collateralAmount = (returnAmount * collateralRate) / 1 ether;
+
+        collateralToken.approve(address(familySavings), collateralAmount);
+
+        uint borrowingId = familySavings.borrow(
+            address(borrowToken),
+            borrowAmount,
+            address(collateralToken),
+            periodInDays
+        );
+
+        skip(600);
+
+        uint preRepayBorrowTokenAmount = borrowToken.balanceOf(address(this));
+        uint preRepayCollateralTokenAmount = collateralToken.balanceOf(
+            address(this)
+        );
+
+        borrowToken.approve(address(familySavings), returnAmount);
+        familySavings.repay(borrowingId);
+
+        FamilySavings.Borrowing memory borrowing = familySavings
+            .getBorrowingById(borrowingId);
+
+        assertEq(borrowing.collateralAmount, 0);
+        assertEq(borrowing.returnAmount, 0);
+
+        assertEq(
+            borrowToken.balanceOf(address(this)),
+            preRepayBorrowTokenAmount - returnAmount
+        );
+        assertEq(
+            collateralToken.balanceOf(address(this)),
+            preRepayCollateralTokenAmount + collateralAmount
+        );
+    }
+
     function _beforeEach() private {
         borrowToken = token0;
         collateralToken = token1;
