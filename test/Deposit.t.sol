@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import "./FamilySavings.t.sol";
 
 contract DepositTest is FamilySavingsTest {
+    /// @dev deposit token which contract already has balance of
     function testDepositExisingToken() public {
         assertEq(
             token0.balanceOf(address(familySavings)),
@@ -29,6 +30,7 @@ contract DepositTest is FamilySavingsTest {
         assertEq(token0.balanceOf(address(this)), 0);
     }
 
+    /// @dev deposit token which contract has 0 balance of
     function testDepositNewToken() public {
         assertEq(familySavings.balances(address(token1)), 0);
         assertEq(token1.balanceOf(address(familySavings)), 0);

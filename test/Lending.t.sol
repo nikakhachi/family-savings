@@ -4,8 +4,8 @@ pragma solidity 0.8.20;
 import "./FamilySavings.t.sol";
 
 contract LendingTest is FamilySavingsTest {
-    Token public borrowToken;
-    Token public collateralToken;
+    Token public borrowToken; /// @dev token that will be borrowed
+    Token public collateralToken; /// @dev token that will be used as a collateral
     uint256 public annualLendingRate = 0.1 ether; /// @dev 10% | FORMAT: 1 ether = 100%
     uint256 public collateralRate = 1.5 ether; /// @dev 150% | FORMAT: 1 ether = 100%
 
@@ -18,6 +18,7 @@ contract LendingTest is FamilySavingsTest {
             1 ether;
     uint public collateralAmount = (returnAmount * collateralRate) / 1 ether;
 
+    /// @dev test the borrow
     function testBorrow() public {
         _beforeEach();
 
@@ -59,6 +60,7 @@ contract LendingTest is FamilySavingsTest {
         );
     }
 
+    /// @dev test if the function reverts if tried to borrow with short period
     function testBorrowWithShortPeriod() public {
         _beforeEach();
 
@@ -71,6 +73,7 @@ contract LendingTest is FamilySavingsTest {
         );
     }
 
+    /// @dev test if the function reverts if tried to borrow non supported token
     function testBorrowNonSupportedToken() public {
         _beforeEach();
 
@@ -78,6 +81,7 @@ contract LendingTest is FamilySavingsTest {
         familySavings.borrow(address(0), 1, address(collateralToken), 7);
     }
 
+    /// @dev test if the function reverts if tried to borrow with unsupported collateral
     function testBorrowWithNonSupportedCollateral() public {
         _beforeEach();
 
@@ -85,6 +89,7 @@ contract LendingTest is FamilySavingsTest {
         familySavings.borrow(address(borrowToken), 1, address(0), 7);
     }
 
+    /// @dev test the repay
     function testRepay() public {
         _beforeEach();
 
@@ -97,6 +102,7 @@ contract LendingTest is FamilySavingsTest {
             periodInDays
         );
 
+        /// @dev not really necessary
         skip(600);
 
         uint preRepayBorrowTokenAmount = borrowToken.balanceOf(address(this));
@@ -123,6 +129,7 @@ contract LendingTest is FamilySavingsTest {
         );
     }
 
+    /// @dev test the liquidation
     function testLiquidate() public {
         _beforeEach();
 
@@ -160,6 +167,7 @@ contract LendingTest is FamilySavingsTest {
         );
     }
 
+    /// @dev test if the function reverts if tried to liquidate too early
     function testLiquidateEarly() public {
         _beforeEach();
 

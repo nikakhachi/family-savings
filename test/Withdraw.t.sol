@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import "./FamilySavings.t.sol";
 
 contract WithdrawTest is FamilySavingsTest {
+    /// @dev test withdraw() functionality with voting system
     function testWithdraw() public {
         targets = [address(familySavings)];
         values = [0];

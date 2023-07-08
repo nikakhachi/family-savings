@@ -8,17 +8,23 @@ import "../src/MyGovernor.sol";
 import "../src/TimeLock.sol";
 import "../src/Token.sol";
 
+/// @dev This contract is a parent test contract for FamilySavings contract
+/// @dev Contains all the variables, setUp() and _proposeAndExecute() script
 contract FamilySavingsTest is Test {
-    uint256 public constant TOKEN0_INITIAL_SUPPLY = 10000 * 10 ** 18;
-    uint256 public constant TOKEN0_INITIAL_DEPOSIT = 1000 * 10 ** 18;
-    uint256 public constant TOKEN1_INITIAL_SUPPLY = 10000 * 10 ** 18;
-    uint256 public constant TIMELOCK_MIN_DELAY = 1 weeks;
+    uint256 public constant TOKEN0_INITIAL_SUPPLY = 10000 * 10 ** 18; /// @dev amount minted to deployer
+    uint256 public constant TOKEN0_INITIAL_DEPOSIT = 1000 * 10 ** 18; /// @dev amount deposited to contract
+    uint256 public constant TOKEN1_INITIAL_SUPPLY = 10000 * 10 ** 18; /// @dev amount minted to deployer
+    uint256 public constant TIMELOCK_MIN_DELAY = 1 weeks; /// @dev minDelay arg for TimeLock contract
+
+    /// @dev variables for the MyGovernor contract
     uint256 public constant VOTING_DELAY = 7200;
     uint256 public constant VOTING_PERIOD = 50400;
     uint256 public constant QUORUM_FRACTION = 50;
 
+    /// @dev list of voters (members of the family)
     address[] public voters = [address(this), address(1), address(2)];
-    address[] public emptyArray;
+
+    address[] public emptyArray; /// @dev for utility reasons
 
     FamilySavings public familySavings;
     MyGovernor public myGovernor;
@@ -26,6 +32,7 @@ contract FamilySavingsTest is Test {
     Token public token0;
     Token public token1;
 
+    /// @dev variables for proposing proposals
     address[] public targets;
     uint256[] public values;
     bytes[] public calldatas;
@@ -45,6 +52,9 @@ contract FamilySavingsTest is Test {
 
         familySavings = new FamilySavings(address(timeLock), voters);
 
+        /// @dev voters delegating themselves
+        /// @dev "The downside is that it requires users to delegate to themselves in order to activate checkpoints and have their voting power tracked."
+        /// @dev https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20Votes
         for (uint i = 0; i < voters.length; i++) {
             vm.prank(voters[i]);
             familySavings.delegate(voters[i]);

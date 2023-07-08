@@ -8,6 +8,7 @@ contract SettingRatesTest is FamilySavingsTest {
     address[] public addressArray2;
     uint256[] public uint256Array;
 
+    /// @dev test the setting of the collateral rate
     function testSetCollateralRate() public {
         uint rate = 10;
 
@@ -36,6 +37,7 @@ contract SettingRatesTest is FamilySavingsTest {
         );
     }
 
+    /// @dev test the setting of the batched collateral rates
     function testSetCollateralRateBatched() public {
         addressArray1 = [address(token0), address(token1)];
         addressArray2 = [address(token1), address(token0)];
@@ -74,6 +76,7 @@ contract SettingRatesTest is FamilySavingsTest {
         );
     }
 
+    /// @dev test the setting of the annual lending rate
     function testSetAnnualLendingRate() public {
         uint rate = 10;
 
@@ -95,6 +98,7 @@ contract SettingRatesTest is FamilySavingsTest {
         assertEq(familySavings.annualLendingRates(address(token0)), rate);
     }
 
+    /// @dev test the setting of the batched annual lending rates
     function testSetAnnualLendingRatesBatched() public {
         addressArray1 = [address(token0), address(token1)];
         uint256Array = [10, 20];
