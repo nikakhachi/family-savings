@@ -15,7 +15,7 @@ contract FamilySavingsTest is Test {
     uint256 public constant TIMELOCK_MIN_DELAY = 1 weeks;
     uint256 public constant VOTING_DELAY = 7200;
     uint256 public constant VOTING_PERIOD = 50400;
-    uint256 public constant QUORUM_FRACTION = 30;
+    uint256 public constant QUORUM_FRACTION = 50;
 
     address[] public voters = [address(this), address(1), address(2)];
     address[] public emptyArray;
