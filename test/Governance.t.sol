@@ -3,6 +3,9 @@ pragma solidity 0.8.20;
 
 import "./FamilySavings.t.sol";
 
+/// @dev openzeppelin has already audited contracts but in these tests I just want to make sure
+/// @dev that the setup of the governance over the FamilySavings is done correctly.
+/// @dev That's why not every funtionality are tested but only the vital ones
 contract GovernanceTest is FamilySavingsTest {
     function testProposalWithFirstAndSecondInFavor() public {
         _beforeEach();
