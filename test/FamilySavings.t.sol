@@ -39,12 +39,7 @@ contract FamilySavingsTest is Test {
     string public description;
 
     function setUp() public {
-        timeLock = new TimeLock(
-            TIMELOCK_MIN_DELAY,
-            emptyArray,
-            emptyArray,
-            address(this)
-        );
+        timeLock = new TimeLock(TIMELOCK_MIN_DELAY, emptyArray, emptyArray);
 
         bytes32 proposerRole = timeLock.PROPOSER_ROLE();
         bytes32 executorRole = timeLock.EXECUTOR_ROLE();

@@ -19,12 +19,10 @@ contract TimeLock is TimelockController {
      * @param minDelay is how long you have to wait before executing
      * @param proposers is the list of addresses that can propose
      * @param executors is the list of addresses that can execute
-     * @param admin optional account to be granted admin role; disable with zero address
      */
     constructor(
         uint256 minDelay,
         address[] memory proposers,
-        address[] memory executors,
-        address admin
-    ) TimelockController(minDelay, proposers, executors, admin) {}
+        address[] memory executors
+    ) TimelockController(minDelay, proposers, executors, msg.sender) {}
 }
