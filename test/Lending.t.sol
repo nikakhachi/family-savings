@@ -123,6 +123,61 @@ contract LendingTest is FamilySavingsTest {
         );
     }
 
+    function testLiquidate() public {
+        _beforeEach();
+
+        collateralToken.approve(address(familySavings), collateralAmount);
+
+        uint borrowingId = familySavings.borrow(
+            address(borrowToken),
+            borrowAmount,
+            address(collateralToken),
+            periodInDays
+        );
+
+        uint postBorrowBorrowTokenAmount = borrowToken.balanceOf(address(this));
+        uint postBorrowCollateralTokenAmount = collateralToken.balanceOf(
+            address(this)
+        );
+
+        skip(periodInDays * 24 * 60 * 60);
+
+        familySavings.liquidate(borrowingId);
+
+        FamilySavings.Borrowing memory borrowing = familySavings
+            .getBorrowingById(borrowingId);
+
+        assertEq(borrowing.collateralAmount, 0);
+        assertEq(borrowing.returnAmount, 0);
+
+        assertEq(
+            borrowToken.balanceOf(address(this)),
+            postBorrowBorrowTokenAmount
+        );
+        assertEq(
+            collateralToken.balanceOf(address(this)),
+            postBorrowCollateralTokenAmount
+        );
+    }
+
+    function testLiquidateEarly() public {
+        _beforeEach();
+
+        collateralToken.approve(address(familySavings), collateralAmount);
+
+        uint borrowingId = familySavings.borrow(
+            address(borrowToken),
+            borrowAmount,
+            address(collateralToken),
+            periodInDays
+        );
+
+        skip(periodInDays * 24 * 60 * 60 - 1);
+
+        vm.expectRevert(FamilySavings.TooEarlyForLiquidation.selector);
+        familySavings.liquidate(borrowingId);
+    }
+
     function _beforeEach() private {
         borrowToken = token0;
         collateralToken = token1;
