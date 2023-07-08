@@ -9,14 +9,14 @@ contract LendingTest is FamilySavingsTest {
     uint256 public annualLendingRate = 0.1 ether; /// @dev 10% | FORMAT: 1 ether = 100%
     uint256 public collateralRate = 1.5 ether; /// @dev 150% | FORMAT: 1 ether = 100%
 
-    uint borrowAmount = 100 * 10 ** 18;
-    uint periodInDays = 365 * 2;
-    uint256 returnAmount =
+    uint public borrowAmount = 100 * 10 ** 18;
+    uint public periodInDays = 365 * 2;
+    uint256 public returnAmount =
         borrowAmount +
             (borrowAmount * annualLendingRate * periodInDays) /
             365 /
             1 ether;
-    uint collateralAmount = (returnAmount * collateralRate) / 1 ether;
+    uint public collateralAmount = (returnAmount * collateralRate) / 1 ether;
 
     function testBorrow() public {
         _beforeEach();
