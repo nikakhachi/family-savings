@@ -23,6 +23,11 @@ contract LendingTest is FamilySavingsTest {
 
         collateralToken.approve(address(familySavings), collateralAmount);
 
+        uint startingBorrowTokenAmount = borrowToken.balanceOf(address(this));
+        uint startingCollateralTokenAmount = collateralToken.balanceOf(
+            address(this)
+        );
+
         uint borrowingId = familySavings.borrow(
             address(borrowToken),
             borrowAmount,
@@ -42,6 +47,15 @@ contract LendingTest is FamilySavingsTest {
         assertEq(
             borrowing.returnDateTimestamp,
             block.timestamp + (periodInDays * 24 * 60 * 60)
+        );
+
+        assertEq(
+            borrowToken.balanceOf(address(this)),
+            startingBorrowTokenAmount + borrowAmount
+        );
+        assertEq(
+            collateralToken.balanceOf(address(this)),
+            startingCollateralTokenAmount - collateralAmount
         );
     }
 
