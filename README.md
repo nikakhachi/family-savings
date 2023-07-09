@@ -8,6 +8,27 @@
 
 ## Features
 
+Keep in mind that there are terms used like "family", "members", and "family members". This all technically means the owner of the contract because the contract is the voting based and the mentioned parties are the voters.
+
+- ***deposit*** - Users can deposit assets into the account by calling the deposit function. The deposited assets are stored in the contract's balance and can be withdrawn later or lent. The user must approve a smart contract on a specific asset and amount before calling this function, otherwise, the transaction will revert. Please note that a smart contract is written that way that anyone can deposit assets into any saving account but only members can call withdraw function by voting. This means that the non-owner address has no reason to deposit assets into the account. However, this transaction will not revert because there is no security risk for the family's funds - only benefits.
+
+- ***withdraw*** - Members can call this function to withdraw any amount of any token to any address, the proposal must go through the voting process for it to be executed. Then The specified amount of assets will be transferred back to the specified address. The function does not perform any balance checks. If the family wants to withdraw more assets than they have into a saving account or want to withdraw assets that are not liquidated, the transaction will revert because of insufficient funds or overflow.
+
+- ***setCollateralRate / setCollateralRateBatched*** - The family can set the collateral rate for specific borrowing and lending assets through a voting-based system
+
+- ***setAnnualLendingRate / setAnnualLendingRateBatched*** - The family can set the daily lending rate for specific assets through a voting-based system
+
+- ***borrow*** - Users can borrow assets by providing collateral. The borrow function allows users to specify the borrowing asset, borrowing amount, collateral asset, and borrowing period. The minimum borrowing period is 7 days and can be the subject of discussion. The function calculates the return amount based on the borrowing amount and lending rates, and the required collateral amount based on the collateral rate. The collateral asset is transferred to the contract, and the borrowing asset is transferred to the borrower.
+
+- ***repay*** - Borrowers can repay their borrowings by calling the repay function and specifying the index of borrowing position that he wants to repay. The borrowed assets are transferred back to the contract, and the collateral assets are transferred back to the borrower.
+
+- ***liquidate*** - If a borrower fails to repay their borrowings within the specified borrowing period, the collateral can be liquidated by calling the liquidate function. The collateral assets stay in the contract but now the user can withdraw them. Also, contract storage is updated that way that if a borrower wants to repay an already liquidated borrowing position transaction will pass but the user will not receive any funds and the contract will not take any funds away from him. This can be the subject of discussion. The contract can be changed to revert in that case so the user does not spend his ETH on full transaction fees. Also, anyone can liquidate but will not be incentivized for that.
+
+- ***addMember*** - Family can add a member through a voting-based system that will also be participating in the voting
+
+- ***revokeMember*** -  Family can revoke a member through the voting-based system 
+
+
 ## Example
 
 Let's say the following family members created this family savings contract: Bob (Father), Alice (Mother) and Joe (Son).
@@ -22,7 +43,9 @@ If some John (outside of family) wants to borrow some asset by providing an unde
 
 John is able to repay back 110 tokens by calling ***repay*** function in any time within this 365 days, but if he fails to do so and the year passes, family members will be able to liquidate John by calling ***liquidate*** function and taking his collateral in the contract's balance.
 
-Family members can also vote for adding someone as a member that will also participate in voting by ***addMember*** or they can revoke a member by calling ***revokeMember***
+Family members can withdraw any amount of any token to any address by calling ***withdraw***, which is also a voting based.
+
+Finally, family members can also vote for adding someone as a member that will also participate in voting by ***addMember*** or they can revoke a member by calling ***revokeMember***
 
 ## Usage
 
