@@ -1,5 +1,7 @@
 # Family Savings Smart Contract
 
+This smart contract implements a voting-based family savings account that allows the family members to deposit assets, borrow against their deposits, lend the assets to other users and liquidate and repay their borrowings. It supports different assets and the family members need to configure lending and collateral rates for each asset before borrowing is enabled through a voting-based system. Family members can also be added/revoked through voting.
+
 ## Table of Contents
 
 - [Features](#features)
