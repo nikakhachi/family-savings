@@ -25,3 +25,20 @@ John is able to repay back 110 tokens by calling ***repay*** function in any tim
 Family members can also vote for adding someone as a member that will also participate in voting by ***addMember*** or they can revoke a member by calling ***revokeMember***
 
 ## Usage
+
+1. Clone this repository to your local machine.
+2. Install the project dependencies by running `forge install` in the root directory.
+3. Compile the files with `forge build`.
+4. Create a new branch for your changes: `git checkout -b my-new-feature`.
+5. Make the necessary modifications and additions.
+6. Test Smart Contract with `forge test` in the root directory.
+7. Commit and push your changes: `git commit -m 'Add some feature' && git push origin my-new-feature`.
+8. Submit a pull request detailing your changes and their benefits.
+
+If you would like to deploy a smart contract on your local machine do the following:
+
+1. `anvil` to run a local node.
+2. Update the variables in files of the `script/` folder to our needs.
+3. Deploy the smart contract with `forge script script/{filename}.s.sol --fork-url http://localhost:8545 --broadcast`
+
+   Read More About the Deployment from the [Foundry Book](https://book.getfoundry.sh/forge/deploying)
